@@ -38,7 +38,7 @@ class ManageSubscribtionAPIView(APIView):
         is_subscribed_to = get_object_or_404(User, id=id)
         data = {
             'user': request.user.id,
-            'is_subscribed_to': id
+            'is_subscribed_to': is_subscribed_to.id
         }
         serializer = SubscriptionCreateSerializer(
             data=data, context={'request': request})

@@ -1,7 +1,7 @@
 import base64
 
 from django.core.files.base import ContentFile
-from rest_framework.serializers import ModelSerializer, ImageField
+from rest_framework.serializers import ImageField, ModelSerializer
 
 from recipes.models import Recipe
 
