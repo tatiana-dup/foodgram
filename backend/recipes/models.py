@@ -1,7 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
-from recipes.constants import (INGREDIENT_MEASUREMENT_UNIT_MAX_LENGHT,
+from recipes.constants import (CODE_FOR_RECIPE_SHORT_LINK_MAX_LENGTH,
+                               INGREDIENT_MEASUREMENT_UNIT_MAX_LENGHT,
                                INGREDIENT_NAME_MAX_LENGHT,
                                RECIPE_NAME_MAX_LENGHT,
                                TAG_NAME_MAX_LENGHT,
@@ -60,9 +61,15 @@ class Recipe(models.Model):
         help_text='Время в минутах',
         validators=(validate_cooking_time,))
     ingredients = models.ManyToManyField(
-        Ingredient, through='RecipeIngredient', verbose_name='Ингредиенты')
+        Ingredient,
+        through='RecipeIngredient',
+        verbose_name='Ингредиенты',
+        related_name='recipes')
     tags = models.ManyToManyField(
-        Tag, through='RecipeTag', verbose_name='Тэги')
+        Tag,
+        through='RecipeTag',
+        verbose_name='Тэги',
+        related_name='recipes')
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -80,10 +87,16 @@ class Recipe(models.Model):
 
 
 class RecipeIngredient(models.Model):
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE,
-                                   verbose_name='Ингредиенты')
-    amount = models.IntegerField(verbose_name='Количество')
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='recipe_ingredients')
+    ingredient = models.ForeignKey(
+        Ingredient,
+        on_delete=models.CASCADE,
+        verbose_name='Ингредиенты',
+        related_name='recipe_ingredients')
+    amount = models.PositiveIntegerField(verbose_name='Количество')
 
     class Meta:
         constraints = (
@@ -97,8 +110,15 @@ class RecipeIngredient(models.Model):
 
 
 class RecipeTag(models.Model):
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    tag = models.ForeignKey(Tag, on_delete=models.CASCADE, verbose_name='Тэги')
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='recipe_tags')
+    tag = models.ForeignKey(
+        Tag,
+        on_delete=models.CASCADE,
+        verbose_name='Тэги',
+        related_name='recipe_tags')
 
     class Meta:
         verbose_name = 'тэг'
@@ -109,15 +129,46 @@ class RecipeTag(models.Model):
 
 
 class FavoriteRecipe(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='favorite_recipes')
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='favorited_by')
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=('user', 'recipe'),
+                name='unique_user_favorite_recipe'),
+        )
 
 
 class ShoppingCart(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='shopping_cart')
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='in_shopping_cart')
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=('user', 'recipe'),
+                name='unique_user_recipe_in_cart'),
+        )
 
 
 class RecipeShortLink(models.Model):
-    recipe = models.OneToOneField(Recipe, on_delete=models.CASCADE)
-    short_code = models.CharField(max_length=6, unique=True)
+    recipe = models.OneToOneField(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='short_link')
+    short_code = models.CharField(
+        max_length=CODE_FOR_RECIPE_SHORT_LINK_MAX_LENGTH,
+        unique=True)

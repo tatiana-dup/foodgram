@@ -2,12 +2,12 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
-from rest_framework import filters, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
-# from core.permissions import IsAuthenticatedOrRedirect
+from common.serializers import ShortResipeSerializer
 from recipes.filters import RecipeFilter, IngredientSearchFilter
 from recipes.models import (Ingredient,
                             FavoriteRecipe,
@@ -17,7 +17,6 @@ from recipes.models import (Ingredient,
                             Tag)
 from recipes.permissions import IsAuthor
 from recipes.serializers import (IngredientSerializer,
-                                 FavoriteResipeSerializer,
                                  RecipeSerializer,
                                  RecipeCreateSerializer,
                                  ShortLinkSerializer,
@@ -97,7 +96,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     'errors': 'Этот рецепт уже есть в вашем списке избранного.'
                 }
                 return Response(errors, status=status.HTTP_400_BAD_REQUEST)
-            serializer = FavoriteResipeSerializer(recipe)
+            serializer = ShortResipeSerializer(recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         if request.method == "DELETE":
@@ -124,7 +123,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     'errors': 'Этот рецепт уже есть в вашем списке покупок.'
                 }
                 return Response(errors, status=status.HTTP_400_BAD_REQUEST)
-            serializer = FavoriteResipeSerializer(recipe)
+            serializer = ShortResipeSerializer(recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         if request.method == "DELETE":
