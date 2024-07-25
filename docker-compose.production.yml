@@ -27,7 +27,7 @@ services:
   gateway:
     image: tancher5/foodgram_gateway
     ports:
-      - 8080:80
+      - 7000:80
     volumes:
       - static:/static
       - users_media:/media
