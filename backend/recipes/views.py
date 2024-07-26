@@ -1,3 +1,5 @@
+import logging
+
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -24,6 +26,12 @@ from recipes.serializers import (IngredientSerializer,
 from recipes.utils import (download_txt,
                            generate_unique_short_code,
                            get_ingredients_from_shopping_list)
+
+
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO,
+)
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
@@ -69,6 +77,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                         status=status.HTTP_201_CREATED)
 
     def update(self, request, *args, **kwargs):
+        logging.info(f'Пришли данные: {request.data}')
         instance = self.get_object()
         serializer = self.get_serializer(
             instance, data=request.data, partial=True)
@@ -156,10 +165,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return download_txt(shopping_list)
 
 
+# class RecipeShortLinkRedirectView(APIView):
+#     def get(self, request, short_code):
+#         short_link_obj = get_object_or_404(
+#             RecipeShortLink, short_code=short_code)
+#         recipe_id = short_link_obj.recipe.id
+#         recipe_url = reverse('recipes:recipe-detail', args=[recipe_id])
+#         return redirect(recipe_url)
+
+
 class RecipeShortLinkRedirectView(APIView):
     def get(self, request, short_code):
         short_link_obj = get_object_or_404(
             RecipeShortLink, short_code=short_code)
         recipe_id = short_link_obj.recipe.id
-        recipe_url = reverse('recipes:recipe-detail', args=[recipe_id])
-        return redirect(recipe_url)
+        return redirect(f'/recipes/{recipe_id}/')

@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework import serializers
 
 from common.serializers import Base64ImageField
@@ -10,6 +12,12 @@ from recipes.models import (Ingredient,
                             ShoppingCart,
                             Tag)
 from users.serializers import MyUserSerializer
+
+
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO,
+)
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -132,6 +140,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return recipe
 
     def update(self, instance, validated_data):
+        logging.info(f'Отвалидированные данные: {validated_data}')
         inrgedients_data = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
         instance.name = validated_data.get('name', instance.name)
@@ -148,6 +157,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 amount=ingredient['amount']
             )
         instance.save
+        logging.info(f'После сохранения: {instance.name}, {instance.text}')
         return instance
 
 
