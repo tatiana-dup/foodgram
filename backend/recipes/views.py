@@ -71,9 +71,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(
-            instance, data=request.data)
+            instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        recipe = serializer.save(author=self.request.user)
+        recipe = serializer.save()
 
         if getattr(instance, '_prefetched_objects_cache', None):
             instance._prefetched_objects_cache = {}
