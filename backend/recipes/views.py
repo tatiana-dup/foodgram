@@ -84,6 +84,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         recipe = serializer.save()
 
+        logging.info(f'После сохранения сериалайзера: {recipe.name}')
+
         if getattr(instance, '_prefetched_objects_cache', None):
             instance._prefetched_objects_cache = {}
 

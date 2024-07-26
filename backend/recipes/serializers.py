@@ -156,7 +156,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 ingredient_id=ingredient['id'],
                 amount=ingredient['amount']
             )
-        instance.save
+        instance.save()
         logging.info(f'После сохранения: {instance.name}, {instance.text}')
         return instance
 
