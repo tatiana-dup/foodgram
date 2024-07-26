@@ -1,7 +1,4 @@
-import logging
-
 from django.shortcuts import get_object_or_404, redirect
-# from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -19,19 +16,12 @@ from recipes.models import (Ingredient,
                             Tag)
 from recipes.permissions import IsAuthor
 from recipes.serializers import (IngredientSerializer,
-                                 RecipeCreateSerializer,
                                  RecipeSerializer,
                                  ShortLinkSerializer,
                                  TagSerializer)
 from recipes.utils import (download_txt,
                            generate_unique_short_code,
                            get_ingredients_from_shopping_list)
-
-
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO,
-)
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
@@ -50,6 +40,7 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
+    serializer_class = RecipeSerializer
     http_method_names = ('get', 'post', 'patch', 'delete')
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
@@ -58,41 +49,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if self.action == ('shopping_cart', 'favorite',
                            'download_shopping_cart'):
             self.permission_classes = (IsAuthenticated,)
-        elif self.action in ('update', 'partial_update', 'destroy'):
+        elif self.action in ('partial_update', 'destroy'):
             self.permission_classes = (IsAuthor,)
         return super().get_permissions()
 
-    def get_serializer_class(self):
-        if self.action in ('list', 'retrieve'):
-            return RecipeSerializer
-        return RecipeCreateSerializer
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        recipe = serializer.save(author=self.request.user)
-        response_serialaizer = RecipeSerializer(
-            recipe, context={'request': request})
-        return Response(response_serialaizer.data,
-                        status=status.HTTP_201_CREATED)
-
-    def update(self, request, *args, **kwargs):
-        logging.info(f'Пришли данные: {request.data}')
-        instance = self.get_object()
-        serializer = self.get_serializer(
-            instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        recipe = serializer.save()
-
-        logging.info(f'После сохранения сериалайзера: {recipe.name}')
-
-        if getattr(instance, '_prefetched_objects_cache', None):
-            instance._prefetched_objects_cache = {}
-
-        response_serializer = RecipeSerializer(
-            recipe, context={'request': request})
-        return Response(response_serializer.data,
-                        status=status.HTTP_200_OK)
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
     @action(methods=('post', 'delete'), detail=True)
     def favorite(self, request, pk=None):
@@ -165,15 +127,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def download_shopping_cart(self, request):
         shopping_list = get_ingredients_from_shopping_list(request.user)
         return download_txt(shopping_list)
-
-
-# class RecipeShortLinkRedirectView(APIView):
-#     def get(self, request, short_code):
-#         short_link_obj = get_object_or_404(
-#             RecipeShortLink, short_code=short_code)
-#         recipe_id = short_link_obj.recipe.id
-#         recipe_url = reverse('recipes:recipe-detail', args=[recipe_id])
-#         return redirect(recipe_url)
 
 
 class RecipeShortLinkRedirectView(APIView):
