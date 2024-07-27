@@ -127,7 +127,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = 'users.MyUser'
+AUTH_USER_MODEL = 'users.AppUser'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -136,16 +136,17 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly'
     ],
-    'DEFAULT_PAGINATION_CLASS': 'backend.pagination.CustomPageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS': 'common.pagination.LimitPageNumberPagination',
+    'PAGE_SIZE': 6,
 }
 
 DJOSER = {
     'LOGIN_FIELD': 'email',
     'HIDE_USERS': False,
     'SERIALIZERS': {
-        'user': 'users.serializers.MyUserSerializer',
-        'current_user': 'users.serializers.MyUserSerializer',
-        'user_create': 'users.serializers.MyUserCreateSerializer',
+        'user': 'users.serializers.AppUserSerializer',
+        'current_user': 'users.serializers.AppUserSerializer',
+        'user_create': 'users.serializers.AppUserCreateSerializer',
     },
     'PERMISSIONS': {
         'user': ['users.permissions.UserByPkOrAuthOnly'],

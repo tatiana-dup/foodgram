@@ -1,38 +1,21 @@
-import random
-import string
-
+from django.db.models import Sum
 from django.http import HttpResponse
 
-from recipes.constants import CODE_FOR_RECIPE_SHORT_LINK_MAX_LENGTH
-from recipes.models import (Ingredient,
-                            RecipeIngredient,
-                            RecipeShortLink)
-
-
-def generate_unique_short_code():
-    while True:
-        short_code = ''.join(random.choices(
-            string.ascii_letters + string.digits,
-            k=CODE_FOR_RECIPE_SHORT_LINK_MAX_LENGTH))
-        if not RecipeShortLink.objects.filter(short_code=short_code).exists():
-            return short_code
+from recipes.models import (RecipeIngredient)
 
 
 def get_ingredients_from_shopping_list(user):
-    recipe_ids = user.shopping_cart.values_list('recipe_id', flat=True)
-    ingredients_list = RecipeIngredient.objects.filter(
-        recipe_id__in=recipe_ids).values('ingredient_id', 'amount')
-    ingred_dict = {}
-    for item in ingredients_list:
-        ingred_id = item['ingredient_id']
-        amount = item['amount']
-        if ingred_id in ingred_dict:
-            amount = amount + ingred_dict[ingred_id]
-        ingred_dict[ingred_id] = amount
-    ingredients = Ingredient.objects.filter(id__in=ingred_dict.keys())
+    ingredients = (
+        RecipeIngredient.objects
+        .filter(recipe__shopping_cart__user=user)
+        .values('ingredient__name', 'ingredient__measurement_unit')
+        .annotate(total_amount=Sum('amount'))
+        .order_by('ingredient__name')
+    )
     shopping_list = [
-        f'{ingred.name.capitalize()} ({ingred.measurement_unit}) - '
-        f'{ingred_dict[ingred.id]}' for ingred in ingredients
+        f"{item['ingredient__name'].capitalize()} "
+        f"({item['ingredient__measurement_unit']}) - {item['total_amount']}"
+        for item in ingredients
     ]
     return shopping_list
 

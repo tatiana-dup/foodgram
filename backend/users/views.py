@@ -19,10 +19,9 @@ class UserAvatarAPIView(APIView):
     def put(self, request):
         user = request.user
         serializer = AvatarSerializer(user, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request):
         user = request.user
@@ -49,10 +48,9 @@ class ManageSubscribtionAPIView(APIView):
     def delete(self, request, id):
         user = request.user
         is_subscribed_to = get_object_or_404(User, id=id)
-        subscribtion = Subscribtion.objects.filter(
-            user=user, is_subscribed_to=is_subscribed_to)
-        if subscribtion:
-            subscribtion.delete()
+        deleted_count, _ = Subscribtion.objects.filter(
+            user=user, is_subscribed_to=is_subscribed_to).delete()
+        if deleted_count > 0:
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(
             {'errors': 'Вы не подписаны на этого пользователя.'},

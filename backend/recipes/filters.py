@@ -5,15 +5,14 @@ from recipes.models import Recipe, Tag
 
 
 class RecipeFilter(filters.FilterSet):
-    author = filters.NumberFilter(field_name='author_id')
     tags = filters.ModelMultipleChoiceFilter(field_name='tags__slug',
                                              to_field_name='slug',
                                              queryset=Tag.objects.all(),
                                              conjoined=False)
     is_favorited = filters.BooleanFilter(
-        field_name='favorited_by', method='filter_by_boolean_field')
+        field_name='favorite_recipes', method='filter_by_boolean_field')
     is_in_shopping_cart = filters.BooleanFilter(
-        field_name='in_shopping_cart', method='filter_by_boolean_field')
+        field_name='shopping_cart', method='filter_by_boolean_field')
 
     def filter_by_boolean_field(self, queryset, name, value):
         user = self.request.user

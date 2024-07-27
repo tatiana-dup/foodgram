@@ -7,7 +7,7 @@ from users.constants import (FIRST_NAME_MAX_LENGTH,
 from users.validators import validate_username
 
 
-class MyUser(AbstractUser):
+class AppUser(AbstractUser):
 
     email = models.EmailField('Емейл', unique=True)
     username = models.CharField(
@@ -34,12 +34,12 @@ class MyUser(AbstractUser):
 
 class Subscribtion(models.Model):
     user = models.ForeignKey(
-        MyUser,
+        AppUser,
         on_delete=models.CASCADE,
         verbose_name='Пользователь',
         related_name='subscriptions')
     is_subscribed_to = models.ForeignKey(
-        MyUser,
+        AppUser,
         on_delete=models.CASCADE,
         verbose_name='Подписан на',
         related_name='subscribers')
@@ -58,8 +58,8 @@ class Subscribtion(models.Model):
                 name='user_cant_follow_self'
             ),
         )
-        verbose_name = 'пользователь'
-        verbose_name_plural = 'Пользователи'
+        verbose_name = 'подписка'
+        verbose_name_plural = 'Подписки'
         ordering = ('-subscription_date',)
 
     def __str__(self):

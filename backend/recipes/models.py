@@ -1,4 +1,8 @@
+import random
+import string
+
 from django.contrib.auth import get_user_model
+from django.core.validators import MinValueValidator
 from django.db import models
 
 from recipes.constants import (CODE_FOR_RECIPE_SHORT_LINK_MAX_LENGTH,
@@ -18,7 +22,7 @@ class Tag(models.Model):
     name = models.CharField(
         'Название', max_length=TAG_NAME_MAX_LENGHT, unique=True,)
     slug = models.SlugField(
-        'Слаг', max_length=TAG_SLUG_MAX_LENGHT, unique=True, null=True)
+        'Слаг', max_length=TAG_SLUG_MAX_LENGHT, unique=True)
 
     class Meta:
         verbose_name = 'тэг'
@@ -76,6 +80,9 @@ class Recipe(models.Model):
         verbose_name='Автор',
         related_name='recipes')
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
+    short_code = models.CharField(
+        max_length=CODE_FOR_RECIPE_SHORT_LINK_MAX_LENGTH,
+        unique=True, blank=True, null=True)
 
     class Meta:
         verbose_name = 'рецепт'
@@ -84,6 +91,19 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.name[:TEXT_MAX_LENGHT_FOR_ADMIN_ZONE]
+
+    def generate_unique_short_code(self):
+        while True:
+            short_code = ''.join(random.choices(
+                string.ascii_letters + string.digits,
+                k=CODE_FOR_RECIPE_SHORT_LINK_MAX_LENGTH))
+            if not Recipe.objects.filter(short_code=short_code).exists():
+                return short_code
+
+    def save(self, *args, **kwargs):
+        if not self.short_code:
+            self.short_code = self.generate_unique_short_code()
+        super().save(*args, **kwargs)
 
 
 class RecipeIngredient(models.Model):
@@ -96,7 +116,9 @@ class RecipeIngredient(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Ингредиенты',
         related_name='recipe_ingredients')
-    amount = models.PositiveIntegerField(verbose_name='Количество')
+    amount = models.PositiveIntegerField(
+        verbose_name='Количество',
+        validators=(MinValueValidator(1, 'Укажите количество больше 0.'),))
 
     class Meta:
         constraints = (
@@ -128,17 +150,22 @@ class RecipeTag(models.Model):
         return f'{self.recipe} в категории {self.tag}'
 
 
-class FavoriteRecipe(models.Model):
+class UserRecipeBase(models.Model):
     user = models.ForeignKey(
         User,
-        on_delete=models.CASCADE,
-        related_name='favorite_recipes')
+        on_delete=models.CASCADE)
     recipe = models.ForeignKey(
         Recipe,
-        on_delete=models.CASCADE,
-        related_name='favorited_by')
+        on_delete=models.CASCADE)
 
     class Meta:
+        abstract = True
+
+
+class FavoriteRecipe(UserRecipeBase):
+
+    class Meta(UserRecipeBase.Meta):
+        default_related_name = 'favorite_recipes'
         constraints = (
             models.UniqueConstraint(
                 fields=('user', 'recipe'),
@@ -146,29 +173,12 @@ class FavoriteRecipe(models.Model):
         )
 
 
-class ShoppingCart(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='shopping_cart')
-    recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        related_name='in_shopping_cart')
+class ShoppingCart(UserRecipeBase):
 
-    class Meta:
+    class Meta(UserRecipeBase.Meta):
+        default_related_name = 'shopping_cart'
         constraints = (
             models.UniqueConstraint(
                 fields=('user', 'recipe'),
                 name='unique_user_recipe_in_cart'),
         )
-
-
-class RecipeShortLink(models.Model):
-    recipe = models.OneToOneField(
-        Recipe,
-        on_delete=models.CASCADE,
-        related_name='short_link')
-    short_code = models.CharField(
-        max_length=CODE_FOR_RECIPE_SHORT_LINK_MAX_LENGTH,
-        unique=True)

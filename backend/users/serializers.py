@@ -3,14 +3,18 @@ from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers, validators
 
 from common.serializers import Base64ImageField, ShortResipeSerializer
+from common.validators import validate_recipes_limit
 from users.models import Subscribtion
-from users.validators import validate_recipes_limit
 
 
 User = get_user_model()
 
 
-class MyUserCreateSerializer(UserCreateSerializer):
+# Без переопределения сериалайзера не работает, так как в Djoser
+# по умолчанию 'LOGIN_FIELD': 'username', а я в settings.py меняю на
+# 'LOGIN_FIELD': 'email', а в сериалайзере в fields указано LOGIN_FIELD,
+# а username явно не прописан, поэтому игнорируется в полученных данных.
+class AppUserCreateSerializer(UserCreateSerializer):
 
     class Meta:
         model = User
@@ -18,7 +22,7 @@ class MyUserCreateSerializer(UserCreateSerializer):
                   'password')
 
 
-class MyUserSerializer(serializers.ModelSerializer):
+class AppUserSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
@@ -28,13 +32,13 @@ class MyUserSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            return Subscribtion.objects.filter(
-                user=request.user, is_subscribed_to=obj).exists()
-        return False
+        return (request
+                and request.user.is_authenticated
+                and Subscribtion.objects.filter(
+                    user=request.user, is_subscribed_to=obj).exists())
 
 
-class SubscribtionsUserSerialiser(MyUserSerializer):
+class SubscribtionsUserSerialiser(AppUserSerializer):
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
 

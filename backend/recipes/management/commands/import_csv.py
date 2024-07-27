@@ -9,29 +9,30 @@ from recipes.models import Ingredient
 class Command(BaseCommand):
     help = 'Import CSV files into the database'
 
-    def add_arguments(self, parser):
-        parser.add_argument(
-            'csv_file', type=str, help='Path to the CSV file'
-        )
-
     @transaction.atomic
     def handle(self, *args, **kwargs):
-        csv_file = kwargs['csv_file']
+        csv_file = 'data/ingredients.csv'
 
-        with open(csv_file, newline='', encoding='utf-8') as csvfile:
-            reader = csv.reader(csvfile)
-            for row in reader:
-                if len(row) != 2:
-                    self.stderr.write(self.style.ERROR(f'Invalid row: {row}'))
-                    continue
+        try:
+            with open(csv_file, newline='', encoding='utf-8') as csvfile:
+                reader = csv.reader(csvfile)
+                ingredients = []
+                for row in reader:
+                    if len(row) != 2:
+                        self.stderr.write(
+                            self.style.ERROR(f'Invalid row: {row}'))
+                        continue
 
-                name, measurement_unit = row
+                    name, measurement_unit = row
 
-                Ingredient.objects.update_or_create(
-                    name=name.strip().lower(),
-                    measurement_unit=measurement_unit.strip()
-                )
-
-        self.stdout.write(
-            self.style.SUCCESS(f'Successfully imported {csvfile}')
-        )
+                    ingredients.append(
+                        Ingredient(name=name.strip().lower(),
+                                   measurement_unit=measurement_unit.strip())
+                    )
+                Ingredient.objects.bulk_create(ingredients,
+                                               ignore_conflicts=True)
+            self.stdout.write(
+                self.style.SUCCESS(f'Successfully imported {csvfile}')
+            )
+        except FileNotFoundError:
+            self.stderr.write(self.style.ERROR(f'File {csv_file} not found'))
