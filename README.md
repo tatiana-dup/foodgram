@@ -11,7 +11,7 @@
 
 
 ## Документация API:
-При локальном запуске проекта статическая документация для API доступна по адресу: http://127.0.0.1/api/docs/
+При локальном запуске проекта статическая документация для API доступна по адресу: http://127.0.0.1:7000/api/docs/
 
 
 ## Как запустить проект локально:
@@ -40,35 +40,45 @@ sudo apt install docker-compose-plugin
 Собрать образы и отправить их в Docker Hub, заменив username на нужный:
 ```
 cd frontend
-docker build -t username/taski_frontend .
-docker push username/taski_frontend
+docker build -t username/foodgram_frontend .
+docker push username/foodgram_frontend
 cd ../backend
-docker build -t username/taski_backend .
-docker push username/taski_backend
-cd ../gateway
-docker build -t username/taski_gateway .
-docker push username/taski_gateway
+docker build -t username/foodgram_backend .
+docker push username/foodgram_backend
+cd ../infra
+docker build -t username/foodgram_gateway .
+docker push username/foodgram_gateway
 ```
 
 В файле docker-compose.production.yml укажите нужные образы.
 
-Для запуска проекта в контейнерах ыполнить команду:
+Для запуска проекта в контейнерах выполнить команду:
 ```
 docker compose -f docker-compose.production.yml up
 ```
+
+После запуска контейнеров выполните миграции и соберите статику:
+```
+docker compose -f docker-compose.production.yml exec backend python manage.py migrate
+docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic --no-input
+docker compose -f docker-compose.production.yml exec backend python manage.py import_csv
+
+```
+
+Приложение должно быть доступно по адресу http://localhost:7000.
 
 
 
 ## Примеры запросов:
 
-### Получение всех публикаций
+### Получение всех рецептов
 ```
-GET /api/v1/posts/
+GET /api/recipes/
 ```
 
 ### Создание публикации
 ```
-POST /api/v1/posts/
+POST /api/recipes/
 Content-Type: application/json
 {
     "text": "string",
