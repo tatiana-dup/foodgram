@@ -54,7 +54,7 @@ docker push username/foodgram_gateway
 
 Для запуска проекта в контейнерах выполнить команду:
 ```
-docker compose -f docker-compose.production.yml up
+docker compose -f docker-compose.production.yml up -d
 ```
 
 После запуска контейнеров выполните миграции и соберите статику:
@@ -76,7 +76,7 @@ docker compose -f docker-compose.production.yml exec backend python manage.py im
 GET /api/recipes/
 ```
 
-### Создание публикации
+### Создание рецепта
 ```
 POST /api/recipes/
 Content-Type: application/json
@@ -87,38 +87,9 @@ Content-Type: application/json
 }
 ```
 
-### Получение публикации
+### Получение рецепта
 ```
 GET /api/v1/posts/{id}/
-```
-
-### Получение всех комментариев к публикации
-```
-GET /api/v1/posts/{post_id}/comments/
-```
-
-### Добавление комментария к публикации
-```
-POST /api/v1/posts/{post_id}/comments/
-Content-Type: application/json
-{
-    "text": "string"
-}
-```
-
-### Получение комментария
-```
-GET /api/v1/posts/{post_id}/comments/{id}/
-```
-
-### Получение всех сообществ
-```
-GET /api/v1/groups/
-```
-
-### Информация о сообществе
-```
-GET /api/v1/groups/{id}/
 ```
 
 ### Получение всех подписок пользователя
