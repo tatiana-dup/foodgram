@@ -15,6 +15,7 @@ User = get_user_model()
 # 'LOGIN_FIELD': 'email', а в сериалайзере в fields указано LOGIN_FIELD,
 # а username явно не прописан, поэтому игнорируется в полученных данных.
 class AppUserCreateSerializer(UserCreateSerializer):
+    """Сериализатор для создания пользователя."""
 
     class Meta:
         model = User
@@ -23,6 +24,7 @@ class AppUserCreateSerializer(UserCreateSerializer):
 
 
 class AppUserSerializer(serializers.ModelSerializer):
+    """Сериализатор для чтения информации о пользователе."""
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
@@ -39,6 +41,7 @@ class AppUserSerializer(serializers.ModelSerializer):
 
 
 class SubscribtionsUserSerialiser(AppUserSerializer):
+    """Сериализатор для получения списка подписок пользователя."""
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
 
@@ -61,6 +64,7 @@ class SubscribtionsUserSerialiser(AppUserSerializer):
 
 
 class SubscriptionCreateSerializer(serializers.ModelSerializer):
+    """Сериализатор для подписки пользователя на другого."""
     class Meta:
         model = Subscribtion
         fields = ('user', 'is_subscribed_to')
@@ -84,6 +88,7 @@ class SubscriptionCreateSerializer(serializers.ModelSerializer):
 
 
 class AvatarSerializer(serializers.Serializer):
+    """Сериализатор для загрузки аватарки."""
     avatar = Base64ImageField()
 
     class Meta:

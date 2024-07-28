@@ -1,3 +1,6 @@
+## Реализованный проект доступен по ссылке:
+[Foodgram](https://foodgram.tatianadup.ru/) 
+
 ## Описание проекта:
 
 Этот проект представляет собой сайт для публикации рецептов.
@@ -11,7 +14,7 @@
 
 
 ## Документация API:
-При локальном запуске проекта статическая документация для API доступна по адресу: http://127.0.0.1:7000/api/docs/
+При локальном запуске проекта статическая документация для API доступна по адресу: http://127.0.0.1:7000/api/docs/redoc.html
 
 
 ## Как запустить проект локально:
@@ -81,9 +84,20 @@ GET /api/recipes/
 POST /api/recipes/
 Content-Type: application/json
 {
-    "text": "string",
-    "image": "string",
-    "group": 0
+  "ingredients": [
+    {
+      "id": 1123,
+      "amount": 10
+    }
+  ],
+  "tags": [
+    1,
+    2
+  ],
+  "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==",
+  "name": "string",
+  "text": "string",
+  "cooking_time": 1
 }
 ```
 
@@ -92,19 +106,73 @@ Content-Type: application/json
 GET /api/v1/posts/{id}/
 ```
 
-### Получение всех подписок пользователя
+### Получение короткой ссылки на рецепт
 ```
-GET /api/v1/follow/
+GET /api/recipes/{id}/get-link/
+```
+
+### Добавить рецепт в список покупок
+```
+POST /api/recipes/{id}/shopping_cart/
+Content-Type: application/json
+{
+}
+```
+
+### Скачать список покупок
+```
+GET api/recipes/download_shopping_cart/
+```
+
+### Добавить рецепт в избранное
+```
+POST /api/recipes/{id}/favorite/
+Content-Type: application/json
+{
+}
+```
+
+### Получение списка подписок
+```
+GET /api/users/subscriptions/
 ```
 
 ### Подписка пользователя на другого
 ```
-POST /api/v1/follow/
+POST /api/users/{id}/subscribe/
 Content-Type: application/json
 {
-    "following": "string"
 }
 ```
+
+### Регистрация пользователя
+```
+POST /api/users/
+Content-Type: application/json
+{
+"email": "vpupkin@yandex.ru",
+"username": "vasya.pupkin",
+"first_name": "Вася",
+"last_name": "Иванов",
+"password": "Qwerty123"
+}
+```
+
+### Получение токена
+```
+POST /api/auth/token/login/
+Content-Type: application/json
+{
+"password": "string",
+"email": "string"
+}
+```
+
+## Получение профиля пользователя
+```
+GET /api/users/{id}/
+```
+
 
 ---
 Автор проекта: [Татьяна Дуплинская](https://github.com/tatiana-dup)

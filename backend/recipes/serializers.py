@@ -12,12 +12,17 @@ from users.serializers import AppUserSerializer
 
 
 class IngredientSerializer(serializers.ModelSerializer):
+    """Сериализатор для чтения информации об ингредиентах."""
     class Meta:
         model = Ingredient
         fields = '__all__'
 
 
 class IngredientRecipeSerializers(serializers.ModelSerializer):
+    """
+    Сериализатор для чтения информации об ингредиентах, добавленных в
+    определенном количестве в рецепт.
+    """
     id = serializers.ReadOnlyField(source='ingredient.id')
     name = serializers.ReadOnlyField(source='ingredient.name')
     measurement_unit = serializers.ReadOnlyField(
@@ -29,6 +34,7 @@ class IngredientRecipeSerializers(serializers.ModelSerializer):
 
 
 class IngredientsAddSerialazer(serializers.ModelSerializer):
+    """Сериализатор для добавления ингредиентов в рецепт."""
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all())
 
@@ -38,12 +44,14 @@ class IngredientsAddSerialazer(serializers.ModelSerializer):
 
 
 class TagSerializer(serializers.ModelSerializer):
+    """Сериализатор для чтения информации о тэгах."""
     class Meta:
         model = Tag
         fields = ('id', 'name', 'slug')
 
 
 class RecipeSerializer(serializers.ModelSerializer):
+    """Сериализатор для чтения информации о рецептах."""
     author = AppUserSerializer()
     ingredients = IngredientRecipeSerializers(
         source='recipe_ingredients', many=True)
@@ -72,6 +80,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
+    """Сериализатор для создания и обновления рецепта."""
     author = AppUserSerializer(read_only=True)
     ingredients = IngredientsAddSerialazer(many=True)
     image = Base64ImageField()
@@ -148,6 +157,9 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
 
 class UserRecipeBaseSerializer(serializers.ModelSerializer):
+    """
+    Базовый сериализатор для создания отношений между рецептом и пользователем.
+    """
     class Meta:
         abstract = True
         fields = ('user', 'recipe')
@@ -157,6 +169,7 @@ class UserRecipeBaseSerializer(serializers.ModelSerializer):
 
 
 class FavoriteRecipeSerializer(UserRecipeBaseSerializer):
+    """Сериализатор для добавления рецепта в избранное."""
     class Meta(UserRecipeBaseSerializer.Meta):
         model = FavoriteRecipe
         validators = [
@@ -169,6 +182,7 @@ class FavoriteRecipeSerializer(UserRecipeBaseSerializer):
 
 
 class ShoppingCartSerializer(UserRecipeBaseSerializer):
+    """Сериализатор для добавления рецепта в список покупок."""
     class Meta(UserRecipeBaseSerializer.Meta):
         model = ShoppingCart
         validators = [

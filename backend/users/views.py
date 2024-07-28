@@ -15,6 +15,7 @@ User = get_user_model()
 
 
 class UserAvatarAPIView(APIView):
+    """Класс для обработки запросов на добавление и удаление аватарки."""
 
     def put(self, request):
         user = request.user
@@ -32,6 +33,7 @@ class UserAvatarAPIView(APIView):
 
 
 class ManageSubscribtionAPIView(APIView):
+    """Класс для обработки запросов, связанных с подпиской на пользоватлей."""
 
     def post(self, request, id):
         is_subscribed_to = get_object_or_404(User, id=id)
@@ -58,6 +60,7 @@ class ManageSubscribtionAPIView(APIView):
 
 
 class SubscriptionListView(generics.ListAPIView):
+    """Класс для обработки запроса на получение списка подписок."""
     serializer_class = SubscribtionsUserSerialiser
     permission_classes = (IsAuthenticated,)
 

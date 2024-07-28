@@ -25,6 +25,7 @@ from recipes.utils import (download_txt,
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+    """Класс для обработки всех запросов, связанных с ингредиентами."""
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     pagination_class = None
@@ -33,12 +34,14 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
+    """Класс для обработки всех запросов, связанных с тегами."""
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     pagination_class = None
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
+    """Класс для обработки всех запросов, связанных с рецептами."""
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = (IsAuthorOrReadOnly,)
@@ -132,6 +135,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class RecipeShortLinkRedirectView(APIView):
+    """
+    Класс для обработки коротких ссылок на рецепты и
+    и редиректа на нужный рецепт.
+    """
     def get(self, request, short_code):
         recipe = get_object_or_404(
             Recipe, short_code=short_code)

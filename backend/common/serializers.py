@@ -7,12 +7,14 @@ from recipes.models import Recipe
 
 
 class ShortResipeSerializer(ModelSerializer):
+    """Сериалайзер для чтения короткой информации о рецепте."""
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class Base64ImageField(ImageField):
+    """Класс для поля изображения, полученного в кодировке base64."""
     def to_internal_value(self, data):
         if isinstance(data, str) and data.startswith('data:image'):
             format, imgstr = data.split(';base64,')

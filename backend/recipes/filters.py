@@ -5,6 +5,10 @@ from recipes.models import Recipe, Tag
 
 
 class RecipeFilter(filters.FilterSet):
+    """
+    Класс настроек фильтрации рецептов по автору, тэгам, наличию рецепта
+    в избранном или списке покупок.
+    """
     tags = filters.ModelMultipleChoiceFilter(field_name='tags__slug',
                                              to_field_name='slug',
                                              queryset=Tag.objects.all(),
@@ -31,4 +35,7 @@ class RecipeFilter(filters.FilterSet):
 
 
 class IngredientSearchFilter(SearchFilter):
+    """
+    Класс для поиска ингредиентов по параметру name, переданному в запросе.
+    """
     search_param = 'name'
