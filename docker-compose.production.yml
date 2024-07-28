@@ -4,7 +4,6 @@ volumes:
   pg_data:
   static:
   users_media:
-  docs:
 
 services:
   db:
@@ -32,6 +31,5 @@ services:
     volumes:
       - static:/static
       - users_media:/media
-      - docs:/app/docs/
     depends_on:
       - backend
