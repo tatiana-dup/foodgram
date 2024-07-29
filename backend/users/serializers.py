@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers, validators
 
 from common.serializers import Base64ImageField, ShortResipeSerializer
@@ -8,19 +7,6 @@ from users.models import Subscribtion
 
 
 User = get_user_model()
-
-
-# Без переопределения сериалайзера не работает, так как в Djoser
-# по умолчанию 'LOGIN_FIELD': 'username', а я в settings.py меняю на
-# 'LOGIN_FIELD': 'email', а в сериалайзере в fields указано LOGIN_FIELD,
-# а username явно не прописан, поэтому игнорируется в полученных данных.
-class AppUserCreateSerializer(UserCreateSerializer):
-    """Сериализатор для создания пользователя."""
-
-    class Meta:
-        model = User
-        fields = ('email', 'id', 'username', 'first_name', 'last_name',
-                  'password')
 
 
 class AppUserSerializer(serializers.ModelSerializer):
@@ -34,10 +20,10 @@ class AppUserSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
-        return (request
-                and request.user.is_authenticated
-                and Subscribtion.objects.filter(
-                    user=request.user, is_subscribed_to=obj).exists())
+        return bool(request
+                    and request.user.is_authenticated
+                    and Subscribtion.objects.filter(
+                        user=request.user, is_subscribed_to=obj).exists())
 
 
 class SubscribtionsUserSerialiser(AppUserSerializer):

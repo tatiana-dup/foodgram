@@ -1,4 +1,3 @@
-# from django.db.models import OuterRef, Exists
 from django.shortcuts import get_object_or_404, redirect
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
@@ -42,37 +41,14 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     """Класс для обработки всех запросов, связанных с рецептами."""
-    queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = (IsAuthorOrReadOnly,)
     http_method_names = ('get', 'post', 'patch', 'delete')
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
-    # Если я верно тебя поняла, то это должно выглядеть так.
-    # А в сериалайзере нужно поставить эти поля как BooleanField.
-    # НО! При таком вычислении это не работает при создании/изменении,
-    # т.к. я в этом сериалайзере переопределила to_representation,
-    # чтобы отдать в верном формате, и там мы не можем получить эти значения.
-    # def get_queryset(self):
-    #     user = self.request.user
-    #     if user.is_authenticated:
-    #         return Recipe.objects.annotate(
-    #             is_favorited=Exists(
-    #                 FavoriteRecipe.objects.filter(
-    #                     user=user, recipe=OuterRef('pk')
-    #                 )
-    #             ),
-    #             is_in_shopping_cart=Exists(
-    #                 ShoppingCart.objects.filter(
-    #                     user=user, recipe=OuterRef('pk')
-    #                 )
-    #             )
-    #         )
-    #     return Recipe.objects.annotate(
-    #         is_favorited=False,
-    #         is_in_shopping_cart=False
-    #     )
+    def get_queryset(self):
+        return Recipe.objects.with_user_annotations(self.request.user)
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):

@@ -12,6 +12,7 @@ from recipes.constants import (CODE_FOR_RECIPE_SHORT_LINK_MAX_LENGTH,
                                TAG_NAME_MAX_LENGHT,
                                TAG_SLUG_MAX_LENGHT,
                                TEXT_MAX_LENGHT_FOR_ADMIN_ZONE)
+from recipes.querysets import RecipeQuerySet
 from recipes.validators import validate_cooking_time
 
 
@@ -82,7 +83,9 @@ class Recipe(models.Model):
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
     short_code = models.CharField(
         max_length=CODE_FOR_RECIPE_SHORT_LINK_MAX_LENGTH,
-        unique=True, blank=True, null=True)
+        unique=True, blank=True)
+
+    objects = RecipeQuerySet.as_manager()
 
     class Meta:
         verbose_name = 'рецепт'
